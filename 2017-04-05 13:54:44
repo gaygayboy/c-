@@ -1,0 +1,13 @@
+#include<iostream>
+/*
+ *简单主函数
+ *读取两个数，求他们的乘积
+*/
+int mian()
+{
+std::cout<<:"Enter two numbers:"<<std：：end1;        //等待用户输入两个数字
+int v1=0,v2=0; //保存我们读入的输入数据的变量
+std::cin>>v1>>v2;//读取输入数据
+std::cout<<"the sum of"<<v1<<"and"<<v2<<"is"<<v1*v2<<std::end1,//做两个数字的法乘法
+return 0：
+}
