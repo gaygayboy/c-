@@ -1,0 +1,83 @@
+#include<iostream.h>
+#include<string.h>
+struct birthday
+{
+int year;
+int month;
+int day;
+};
+class student   //第一个类
+{
+int password;
+int seunumber;
+public:
+student(int a,int b)
+{
+password=a;
+seunumber=b;
+}
+void print()
+{
+cout<<"一卡通为："<<password<<'\t'<<"学号为："<<seunumber<<'\t';
+}
+student(student &q)
+{
+password=q.password;
+seunumber=q.seunumber;
+}
+};
+class person //定义类
+{
+student ID;
+char name[20];
+char sex[20];
+birthday time;
+int telnumber;
+public:   
+person(int a,int b,char n[],char s[],int y,int m,int d,int t):ID(a,b)  //初始化构造函数
+{
+    strcpy(name,n);
+    strcpy(sex,s); 
+cout<<"调用构造函数初始化姓名和性别！"<<'\n';
+time.year=y;
+time.month=m;
+time.day=d;
+telnumber=t;
+cout<<"调用构造函数初始化生日和联系电话！"<<'\n';
+}
+void print(); //输出成员函数声明
+person(person &p);//复制构造函数声明
+~person();//析构函数声明
+};   //类后要有分号
+void person::print()    //输出函数                                                    
+{   
+ID.print();
+cout<<"姓名为："<<name<<'\t';
+cout<<"性别为:"<<sex<<'\t';
+cout<<"生日为："<<time.year<<'.'<<time.month<<'.'<<time.day<<'\t';
+cout<<"联系电话为："<<telnumber<<'\n';
+
+}
+person::~person()     //析构函数
+{
+cout<<"调用了析构函数！\n";
+}
+person::person(person &p)      //复制构造函数
+{
+ID=p.ID;
+strcpy(name,p.name);   
+    strcpy(sex,p.sex);         
+telnumber=p.telnumber;
+time.year=p.time.year;
+    time.month=p.time.month;
+time.day=p.time.day;
+cout<<"调用了复制构造函数！\n";
+}
+void main()        //主函数
+{
+person studentID1(213162835,2116315,"benzipang","famale",1997,07,06,2333);
+person studentID2(studentID1);
+studentID1.print();
+studentID2.print();
+}
+   //一卡通的输入和输出
