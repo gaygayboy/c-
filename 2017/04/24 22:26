@@ -1,0 +1,82 @@
+#include<list>
+#include<iostream>
+#include<ctime>
+#include<cstdlib>
+#include<Windows.h>
+#include<utility>
+#include<conio.h>
+#include<algorithm>
+using namespace std;
+void SetCursor(int x, int y,const char*str="") {/*移动输出光标位置 并输出一个字符串*/
+	static HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleCursorPosition(handle, COORD{ (short)x, (short)y });
+	cout << str;
+}
+int main()
+{
+	cout << "◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆";/*---------初始化界面--------*/
+	for (int i = 1; i < 22; ++i) {
+		SetCursor(0, i, "◆");
+		SetCursor(44, i, "◆");
+	}
+	SetCursor(0, 22, "◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆");
+	for (int i = 9; i < 11; ++i)
+		SetCursor(22, i, "■");
+	SetCursor(22, 11, "●");/*蛇头*/
+	SetCursor(52, 7, "按回车键开始游戏");
+	SetCursor(52, 8, "方向键控制蛇移动");
+	SetCursor(54, 9, "游 戏 得 分");
+	SetCursor(57, 10, "0");
+	int d = 1, dt = d, n = 0, x, y, live=1;
+	list<pair<int, int>>s{ { 22,9 },{ 22,10 },{ 22,11 } };/*初始蛇身的三个点 蛇头为最后的点*/
+	int move_to[4][2]{ {0,-1}, {0,1},{-2,0}, {2, 0} };/*向四个方向移动时坐标的变化量*/
+
+	while (!GetAsyncKeyState(VK_RETURN));/*按下回车后开始游戏*/
+	srand(time(nullptr));
+	while (live==1) {/*while 找一个不与蛇身重合的点*/
+		do {
+			x = (rand() % 21 + 1) * 2;
+			y = rand() % 21 + 1;
+		} while (find(s.begin(), s.end(), pair<int, int>(x, y)) != s.end());
+		SetCursor(x, y, "★");/*显示食物*/
+		do {/*dt将要移动的方向,,d原移动方向*/
+			Sleep(200);
+			if (_kbhit()) {/*判断键盘是否有输入*/
+				if (GetAsyncKeyState(VK_UP))/*判断是否按上键*/
+					dt = 0;
+				else if (GetAsyncKeyState(VK_DOWN))
+					dt = 1;
+				else if (GetAsyncKeyState(VK_LEFT))
+					dt = 2;
+				else if (GetAsyncKeyState(VK_RIGHT))
+					dt = 3;
+				else dt = d;/*按其他键*/
+			}
+			/*蛇移动时 只需要蛇头前进一位,蛇尾清除,,其余部分不动*/
+			SetCursor(s.back().first, s.back().second, "■");/*当前蛇头变为蛇身*/
+			if (dt != d && (dt <= 1 && d <= 1 || dt >= 2 && d >= 2))/*如果蛇头将要移动的方向和原移动方向相反,移动方向不变*/
+				dt = d;
+			s.push_back({ s.back().first + move_to[dt][0] , s.back().second + move_to[dt][1] });/*添加新蛇头点*/
+			d = dt;
+			SetCursor(s.back().first, s.back().second, "●");/*输出新蛇头*/
+
+			if (s.back().first != x || s.back().second != y) {/*如果没有吃上食物*/
+				SetCursor(s.front().first, s.front().second);/*光标移动到当前的蛇尾位置*/
+				s.pop_front();/*删除蛇尾*/
+				if (s.back().first == 0 || s.back().first == 44 || s.back().second == 0|| s.back().second == 22 
+					|| find(++s.rbegin(), s.rend(), s.back()) != s.crend()) /*如果撞墙,如果装上自身*/
+					live = 0;
+				else
+					live = 2;/*继续内层循环*/
+				cout << "  ";/*将蛇尾清除*/
+			}
+			else {
+				SetCursor(57, 10, "");
+				cout << ++n;/*输出得分*/
+				live = 1;/*跳出内层循环 执行外部循环 重新获取个食物*/
+			}
+		} while (live == 2);
+	};
+	SetCursor(54, 12, "游 戏 结 束  ");
+	system("pause");
+}
