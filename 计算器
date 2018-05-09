@@ -1,0 +1,283 @@
+# include <stdio.h>
+# include <malloc.h>
+# include <conio.h>
+
+# define maxsize  100
+typedef double datatype1;
+typedef char   datatype2;
+
+typedef struct stack1 
+{
+    datatype1 data1[maxsize];
+    int top1;		/*栈顶元素*/
+}seqstack1,*pseqstack1;   /*顺序栈*/
+typedef struct stack2 
+{
+ datatype2 data2[maxsize];
+    int top2;		/*栈顶元素*/
+}seqstack2,*pseqstack2;   /*顺序栈*/
+
+/*栈的初始化*/
+pseqstack1 init_seqstack1(void)
+{
+    pseqstack1 S;
+    S=(pseqstack1)malloc(sizeof(pseqstack1));
+    if(S)
+        S->top1=-1;
+    return S;
+}
+pseqstack2 init_seqstack2(void)
+{
+    pseqstack2 S;
+    S=(pseqstack2)malloc(sizeof(pseqstack2));
+    if(S)
+        S->top2=-1;
+    return S;
+}
+
+/*判断栈空*/
+int empty_seqstack1(pseqstack1 S)
+{
+    if(S->top1==-1)
+        return 1;
+    else
+        return 0;
+}
+int empty_seqstack2(pseqstack2 S)
+{
+    if(S->top2==-1)
+        return 1;
+    else
+        return 0;
+}
+
+/*X入栈*/
+int push_seqstack1(pseqstack1 S,datatype1 X)
+{
+    if(S->top1==maxsize-1)
+    {
+        printf("栈满，无法入栈！\n");
+        return 0;
+    }
+    else
+    {
+        S->top1++;
+        S->data1[S->top1]=X;
+        return 1;	
+    }
+}
+int push_seqstack2(pseqstack2 S,datatype2 X)
+{
+    if(S->top2==maxsize-1)
+    {
+        printf("栈满，无法入栈！\n");
+        return 0;
+    }
+    else
+    {
+        S->top2++;
+        S->data2[S->top2]=X;
+        return 1;	
+    }
+}
+
+/*X出栈*/
+int pop_seqstack1(pseqstack1 S,datatype1 *X)
+{
+    if(empty_seqstack1(S))
+        return 0;
+    else
+    {
+        *X=S->data1[S->top1];
+        S->top1--;
+        return 1;	
+    }
+}
+int pop_seqstack2(pseqstack2 S,datatype2 *X)
+{
+    if(empty_seqstack2(S))
+        return 0;
+    else
+    {
+        *X=S->data2[S->top2];
+        S->top2--;
+        return 1;	
+    }
+}
+
+/*求栈顶元素*/
+int gettop_seqstack1(pseqstack1 S,datatype1 *X)
+{
+    if(empty_seqstack1(S))
+        return 0;           
+    else
+        *X=S->data1[S->top1];
+        return 1;		
+}
+int gettop_seqstack2(pseqstack2 S,datatype2 *X)
+{
+    if(empty_seqstack2(S))
+        return 0;           
+    else
+        *X=S->data2[S->top2];
+return 1;		
+}
+
+/*判断字符是否为操作数。若是返回1，否则返回0*/
+int isnum(char c)
+{
+    if(c>='0' && c<='9')
+        return 1;
+    else
+        return 0;
+}
+
+/*求后缀表达式的值*/
+double postfix_exp(char *A)
+{
+    pseqstack1 S;	/*定义栈S*/
+	double operand=0;
+    double result;	/*存放栈顶元素*/
+	double a;	/*运算符ch前的操作数出栈存入a*/
+	double b;	/*运算符ch后的操作数出栈存入b*/	
+	double c;	/*c==a ch b*/
+    char ch;	/*存放读取到的表达式(A)的字符*/
+    ch=*A++;	/*读表达式字符=>A*/
+    S=init_seqstack1();	/*初始化栈*/
+    while(ch!='#')/*遇到元素!='#'时*/
+    {
+        if(isnum(ch))/*判断ch是否为数字字符,计算出操作数*/
+            operand=operand*10+(ch-'0');
+        else	/*否则*/
+    	{
+			if(operand)
+			{
+				push_seqstack1(S,operand);/*当前字符不是数字,操作数结束,要入栈*/
+				operand=0;
+			}
+			if(ch!='@' && ch!=' ')
+			{
+				pop_seqstack1(S,&b);		/*运算符ch后的操作数出栈存入b*/
+				pop_seqstack1(S,&a);		/*运算符ch前的操作数出栈存入a*/
+				switch(ch)	/*求 a ch b==? ,将结果赋给 c */
+    			{
+					case '+' : 
+						c=a+b;
+						break;
+					case '-' : 
+						c=a-b;
+						break;
+					case '*' : 
+						c=a*b;
+						break;
+					case '/' :
+						if(b!=0)
+							c=a/b;
+						else
+							printf("分母为零!");
+    			}
+				push_seqstack1(S,c);	/*将c压入栈中*/
+			}
+    	}
+        ch=*A++;	/*指针向下移动一位*/
+    }/*遇到'#'循环结束*/
+    gettop_seqstack1(S,&result);/*此时栈顶元素即为计算结果result*/
+    return result;
+}
+
+/*优先级判断函数*/
+int priority(char op)
+{
+	switch(op)
+	{
+	case '#': return 1;
+	case ')': return 2;
+	case '+': 
+	case '-': return 3;
+	case '*': 
+	case '/': return 4;
+	case '(': return 5;	
+	default : return 0;
+	}		 
+}
+
+/*将指针infixexp指向的中缀表达式转换为指针postfixexp指向的后缀表达式*/
+int infix_exp_value(char *infixexp,char *postfixexp)
+{
+	pseqstack2 S;	/*定义栈S*/
+	int count=0;
+	char w;	/*存放读取到的表达式(infixexp)的字符*/
+	char c;	/*存放栈顶元素*/
+	char topelement;/*存出栈元素*/
+	S=init_seqstack2();	/*初始化栈*/
+	if(!S)	/*栈的初始化判断*/
+{
+		printf("栈初始化失败!");
+		return 0;
+	}							
+	push_seqstack2(S,'#');	/*将结束符'# '加入运算符栈S中*/
+	w=*infixexp;	/*读表达式字符=>w*/
+	while((gettop_seqstack2(S,&c),c)!='#'||w!='#')/*<3>栈顶元素不等于'#'或w不等于'#'时循环*/
+	{
+		if(isnum(w))/*判断w是否为操作数,若是直接输出,读下一个字符=>w,转<3>*/
+		{
+			if(count)
+			{
+				*postfixexp='@';
+				postfixexp++;
+				count=0;
+			}
+			*postfixexp=w;
+			postfixexp++;
+			w=*(++infixexp);
+		}
+		else	/*w若是运算符分类如下*/
+		{
+			count=1;
+			if( (gettop_seqstack2(S,&c),c)=='(' && w==')' )
+			{/*如果栈顶为'('并且w为')'则'('出栈不输出,读下一个字符=>w,转<3>*/
+				pop_seqstack2(S,&topelement);  /*将'('出栈存入topelement*/
+				w=*(++infixexp);
+			}
+			else
+				if( (gettop_seqstack2(S,&c),c)=='(' || priority( (gettop_seqstack2(S,&c),c) ) < priority(w) )
+				{/*如果栈顶为'('或者栈顶优先级小于w优先级,则w入栈,读下一个字符=>w，转<3>*/
+					push_seqstack2(S,w);
+					w=*(++infixexp);
+				}
+				else/*否则*/
+				{/*从运算符栈中出栈并输出,转<3>*/
+					pop_seqstack2(S,&topelement);
+					*postfixexp=topelement;
+					postfixexp++;				
+				}
+		}	
+	}
+	*postfixexp='#';/*在指针postfixexp指向的后缀表达式结尾追加字符'#'*/
+	*(++postfixexp)='\0';/*在指针postfixexp指向的后缀表达式最后追加结束符'\0'*/
+	return 1;
+}
+
+/*主函数*/
+int main()
+{ 
+	int i=0;
+	char A[maxsize];
+	char B[maxsize];
+	printf("请输入表达式,如:11+22#,必须以#号结尾!\n");  
+	/* 1+2*(9+7)-4/2#  23+((12*3-2)/4+34*5/7)+108/9# */
+	A[i]=getchar();
+	while(A[i++]!='#')
+	{
+		A[i]=getchar();
+	}
+	A[i]='\0';
+	infix_exp_value(A,B);
+	printf("A==%s\n",A);
+	printf("B==%s\n",B);
+	printf("上式的结果为: ");
+	printf("%g\n",postfix_exp(B));
+	return 0;
+    getch();
+}
+ 
